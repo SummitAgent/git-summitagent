@@ -16,4 +16,5 @@ fi
 docker run -i --rm \
   -e GITHUB_PERSONAL_ACCESS_TOKEN=$GITHUB_PERSONAL_ACCESS_TOKEN \
   -e GITHUB_TOOLSETS="all" \
+  -p 3001:3001 \
   ghcr.io/github/github-mcp-server
