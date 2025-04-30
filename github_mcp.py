@@ -25,18 +25,16 @@ server = MCPServerStdio(
 )
 
 # Initialize the agent with the MCP server
-agent = Agent(model='openai:gpt-4o', mcp_servers=[server])
+agent = Agent(model='openai:gpt-4.1', mcp_servers=[server])
 
 # Define the main asynchronous function
 async def main():
     async with agent.run_mcp_servers():
-        # List available tools
-        # tools = await agent.list_tools()
-        # print("Available tools:", tools)
-
         # Run a sample query
-        result = await agent.run('How many repositories do I have?')
+        result = await agent.run('What is in my mlops repository?')
+        
         print(result.output)
+    
 
 # Execute the main function
 if __name__ == '__main__':
