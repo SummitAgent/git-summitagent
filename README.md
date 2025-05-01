@@ -42,3 +42,10 @@ Summit agent with the GitHub MCP server and tools
    ```
 
 You can also run the Docker container directly:
+
+
+
+
+
+# ALL YOU NEED TO DO IS GET TOKEN IN ENV FILE AND MAKE NEW ENDPOINTS VIA MAIN AND RUN THIS:
+uv run uvicorn main:app --reload
