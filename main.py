@@ -1,20 +1,37 @@
-from pydantic_ai import Agent
-from pydantic_ai.mcp import MCPServerHTTP
+from fastapi import FastAPI
+import os
 import asyncio
+from pydantic_ai import Agent
+from pydantic_ai.mcp import MCPServerStdio
 
-server = MCPServerHTTP(url='http://localhost:3001')  
-agent = Agent('openai:gpt-4o', mcp_servers=[server])  
+# Retrieve the GitHub token from environment variables
+token = os.getenv('GITHUB_PERSONAL_ACCESS_TOKEN')
+if not token:
+    raise ValueError("GITHUB_PERSONAL_ACCESS_TOKEN is not set in environment variables.")
 
-async def main():
-    async with agent.run_mcp_servers():  
-        result = await agent.run('Search my githib repositories')
-    print(result.output)
-    #> There are 9,208 days between January 1, 2000, and March 18, 2025.
+# Set up the MCP server
+server = MCPServerStdio(
+    command='docker',
+    args=[
+        'run',
+        '-i',
+        '--rm',
+        '-e',
+        'GITHUB_PERSONAL_ACCESS_TOKEN',
+        'ghcr.io/github/github-mcp-server',
+    ],
+    env={
+        'GITHUB_PERSONAL_ACCESS_TOKEN': token
+    }
+)
 
-asyncio.run(main())
-# def main():
-#     print("Hello from git-summitagent!")
+app = FastAPI()
+agent = Agent(model='openai:gpt-4.1', mcp_servers=[server])
 
-
-# if __name__ == "__main__":
-#     main()
+@app.get("/count-repositories")
+async def count_repositories():
+    async with agent.run_mcp_servers():
+        # Run a sample query
+        result = await agent.run('Count how many repositories I have.')
+    
+    return result.output
