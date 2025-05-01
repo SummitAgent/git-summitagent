@@ -34,6 +34,7 @@ async def main():
         result = await agent.run('What is in my mlops repository?')
         
         print(result.output)
+        print(result.usage)
     
 
 # Execute the main function
