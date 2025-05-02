@@ -26,7 +26,7 @@ function App() {
     setMessages(prev => [...prev, newMessage]);
 
     try {
-      const response = await fetch('http://localhost:8000/api/chat', {
+      const response = await fetch('http://localhost:8000/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -34,6 +34,7 @@ function App() {
         body: JSON.stringify({
           github_token: token,
           question: question,
+          messages: [...messages, newMessage],
         }),
       });
 
