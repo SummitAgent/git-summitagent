@@ -139,7 +139,6 @@ export function RepositorySidebar({ onSelectRepo, githubToken }: RepositorySideb
             <GitBranch className="h-5 w-5" />
             <h2 className="text-base font-semibold">Repositories</h2>
           </div>
-          <SidebarTrigger />
         </div>
         <div className="px-2 pb-2">
           <SidebarInput

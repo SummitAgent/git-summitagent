@@ -15,7 +15,7 @@ export default function DashboardPage() {
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen bg-background">
+      <div className="flex h-screen w-screen bg-background">
         <RepositorySidebar onSelectRepo={setSelectedRepo} githubToken={githubToken} />
 
         <div className="flex flex-1 flex-col overflow-hidden">
