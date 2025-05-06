@@ -3,6 +3,11 @@ import os
 import asyncio
 from pydantic_ai import Agent
 from pydantic_ai.mcp import MCPServerStdio
+from fastapi.middleware.cors import CORSMiddleware
+from typing import List, Dict
+from pydantic import BaseModel
+
+from backend.settings.constants import LOCAL_FRONTEND_URL
 
 # Retrieve the GitHub token from environment variables
 token = os.getenv('GITHUB_PERSONAL_ACCESS_TOKEN')
@@ -25,8 +30,33 @@ server = MCPServerStdio(
     }
 )
 
+class RepoRequest(BaseModel):
+    user_name: str
+    repo_name: str
+
+class CollabRequest(BaseModel):
+    repo_name: str
+
+class ChatRequest(BaseModel):
+    github_token: str
+    question: str
+    messages: List[Dict[str, str]]
+
 app = FastAPI()
-agent = Agent(model='openai:gpt-4.1', mcp_servers=[server])
+agent = Agent(model='openai:gpt-4.1-mini', mcp_servers=[server])
+
+# Allow cross-origin resource sharing between local api deployment and frontend deployment
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[LOCAL_FRONTEND_URL],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/")
+async def root():
+    return "Welcome to the Git-SummitAgent Alpha API! Hear over to the /docs for a list of our **agentic** endpoints."
 
 @app.get("/count-repositories")
 async def count_repositories():
@@ -35,3 +65,33 @@ async def count_repositories():
         result = await agent.run('Count how many repositories I have.')
     
     return result.output
+
+@app.get("/get-commit-history")
+async def get_commit_history(request: RepoRequest):
+    async with agent.run_mcp_servers():
+        # Run a sample query
+        result = await agent.run(f'Fetch the commit history for user {request.user_name} in the {request.repo_name} repo.')
+    
+    return result.output
+
+@app.get("/get-contributors")
+async def get_collaborators(request: CollabRequest):
+    async with agent.run_mcp_servers():
+        # Run a sample query
+        result = await agent.run(f'List the contributors in the {request.repo_name} repo.')
+    
+    return result.output
+
+@app.post("/chat")
+async def process_query(request: ChatRequest):
+    # Concatenate previous messages for context
+    conversation = ""
+    for msg in request.messages:
+        role = "User" if msg["type"] == "user" else ("Assistant" if msg["type"] == "bot" else "Error")
+        conversation += f"{role}: {msg['content']}\n"
+    conversation += f"User: {request.question}\n"
+
+    async with agent.run_mcp_servers():
+        result = await agent.run(conversation)
+    
+    return {"response": result.output}
